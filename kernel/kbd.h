@@ -35,6 +35,7 @@
 
 // C('A') == Control-A
 #define C(x) (x - '@')
+#define ALT_T_KEY 0x1C
 
 static uchar shiftcode[256] =
 {
@@ -106,6 +107,24 @@ static uchar ctlmap[256] =
 	C('D'),  C('F'),  C('G'),  C('H'),  C('J'),  C('K'),  C('L'),  NO,
 	NO,      NO,      NO,      C('\\'), C('Z'),  C('X'),  C('C'),  C('V'),
 	C('B'),  C('N'),  C('M'),  NO,      NO,      C('/'),  NO,      NO,
+	[0x9C] '\r',      // KP_Enter
+	[0xB5] C('/'),    // KP_Div
+	[0xC8] KEY_UP,    [0xD0] KEY_DN,
+	[0xC9] KEY_PGUP,  [0xD1] KEY_PGDN,
+	[0xCB] KEY_LF,    [0xCD] KEY_RT,
+	[0x97] KEY_HOME,  [0xCF] KEY_END,
+	[0xD2] KEY_INS,   [0xD3] KEY_DEL
+};
+
+static uchar altmap[256] =
+{
+	NO,      NO,      NO,      NO,      NO,      NO,      NO,      NO,
+	NO,      NO,      NO,      NO,      NO,      NO,      NO,      NO,
+	NO,   NO,    NO,     NO,   ALT_T_KEY,  NO,    NO,     NO,
+	NO,   NO,    NO,      NO,      NO,     NO,      NO,     NO,
+	NO,   NO,    NO,     NO,   NO,   NO,    NO,     NO,
+	NO,      NO,      NO,      NO, NO,   NO,    NO,     NO,
+	NO,   NO,    NO,     NO,      NO,      NO,    NO,      NO,
 	[0x9C] '\r',      // KP_Enter
 	[0xB5] C('/'),    // KP_Div
 	[0xC8] KEY_UP,    [0xD0] KEY_DN,

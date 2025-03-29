@@ -23,6 +23,8 @@ static struct {
 	int locking;
 } cons;
 
+
+
 // Print to the console. only understands %d, %x, %p, %s.
 void
 cprintf(char *fmt, ...)
@@ -69,7 +71,184 @@ panic(char *s)
 
 #define BACKSPACE 0x100
 #define CRTPORT 0x3d4
+#define ALT_T_KEY 0x1C
 static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
+static int table = 0;
+static int cnt = 0;
+static int color = 0x0700;
+static int pamti[99];
+
+void change_color(int cnt){
+
+	if(cnt == 0){
+		color = 0x0700;
+	} else if(cnt == 1){
+		color = 0xfd00;
+	} else if(cnt == 2){
+		color = 0xbc00;
+	} else if (cnt == 3){
+		color = 0xef00;
+	}
+	int bojac = 0;
+	while (bojac < 2000){
+		crt[bojac] &= 0x00ff;
+		crt[bojac++] |= color;
+	}
+
+
+}
+
+void zapamti(int pos){
+	int tmp_pos=pos-79;
+	int brojac=98;
+	for(int i=0;i<9;i++){
+		for(int j=0;j<11;j++){
+			pamti[brojac--]=crt[tmp_pos+j];
+		}
+		tmp_pos-=80;
+	}
+}
+
+void draw(int cnt, int pos){
+	int br_redova = 9;
+	int br_kolone = 11;
+	int tmp = pos;
+	if(table){
+		if(tmp % 80 > 69){
+			pos -= 12;
+		}
+		while(br_redova > 0){
+			pos -= 79;
+			if(br_redova % 2 == 1){
+				for(int i = 0; i < br_kolone; i++){
+					crt[pos++] = '-' | 0x8000;
+				}
+				pos -= 12;
+			} else{
+				if(br_redova == 8){
+					crt[pos++]='|' | 0x8000;
+					crt[pos++]=' ' | 0x8000;
+					if(cnt == 3){
+						crt[pos++]='W' | 0x2000;
+						crt[pos++]='H' | 0x2000;
+						crt[pos++]='T' | 0x2000;
+						crt[pos++]=' ' | 0x2000;
+						crt[pos++]='Y' | 0x2000;
+						crt[pos++]='L' | 0x2000;
+						crt[pos++]='W' | 0x2000;
+					} else{
+						crt[pos++]='W' | 0x8000;
+						crt[pos++]='H' | 0x8000;
+						crt[pos++]='T' | 0x8000;
+						crt[pos++]=' ' | 0x8000;
+						crt[pos++]='Y' | 0x8000;
+						crt[pos++]='L' | 0x8000;
+						crt[pos++]='W' | 0x8000;
+					}
+
+					crt[pos++]=' ' | 0x8000;
+					crt[pos++]='|' | 0x8000;
+					pos -= 12;
+				}
+				else if(br_redova == 6){
+					crt[pos++]='|' | 0x8000;
+					crt[pos++]=' ' | 0x8000;
+
+					if(cnt == 2){
+						crt[pos++]='r' | 0x2000;
+						crt[pos++]='e' | 0x2000;
+						crt[pos++]='d' | 0x2000;
+						crt[pos++]=' ' | 0x2000;
+						crt[pos++]='C' | 0x2000;
+						crt[pos++]='Y' | 0x2000;
+						crt[pos++]='N' | 0x2000;
+					} else{
+						crt[pos++]='r' | 0x8000;
+						crt[pos++]='e' | 0x8000;
+						crt[pos++]='d' | 0x8000;
+						crt[pos++]=' ' | 0x8000;
+						crt[pos++]='C' | 0x8000;
+						crt[pos++]='Y' | 0x8000;
+						crt[pos++]='N' | 0x8000;
+					}
+
+					crt[pos++]=' ' | 0x8000;
+					crt[pos++]='|' | 0x8000;
+					pos -= 12;
+				} else if(br_redova == 4){
+					crt[pos++]='|' | 0x8000;
+					crt[pos++]=' ' | 0x8000;
+
+					if(cnt == 1){
+						crt[pos++]='m' | 0x2000;
+						crt[pos++]='g' | 0x2000;
+						crt[pos++]='t' | 0x2000;
+						crt[pos++]=' ' | 0x2000;
+						crt[pos++]='W' | 0x2000;
+						crt[pos++]='H' | 0x2000;
+						crt[pos++]='T' | 0x2000;
+					} else{
+						crt[pos++]='m' | 0x8000;
+						crt[pos++]='g' | 0x8000;
+						crt[pos++]='t' | 0x8000;
+						crt[pos++]=' ' | 0x8000;
+						crt[pos++]='W' | 0x8000;
+						crt[pos++]='H' | 0x8000;
+						crt[pos++]='T' | 0x8000;
+					}
+
+					crt[pos++]=' ' | 0x8000;
+					crt[pos++]='|' | 0x8000;
+					pos -= 12;
+				} else if(br_redova == 2){
+					crt[pos++]='|' | 0x8000;
+					crt[pos++]=' ' | 0x8000;
+
+					if(cnt == 0){
+						crt[pos++]='l' | 0x2000;
+						crt[pos++]='g' | 0x2000;
+						crt[pos++]='r' | 0x2000;
+						crt[pos++]=' ' | 0x2000;
+						crt[pos++]='b' | 0x2000;
+						crt[pos++]='l' | 0x2000;
+						crt[pos++]='k' | 0x2000;
+					} else{
+						crt[pos++]='l' | 0x8000;
+						crt[pos++]='g' | 0x8000;
+						crt[pos++]='r' | 0x8000;
+						crt[pos++]=' ' | 0x8000;
+						crt[pos++]='b' | 0x8000;
+						crt[pos++]='l' | 0x8000;
+						crt[pos++]='k' | 0x8000;
+					}
+
+					crt[pos++]=' ' | 0x8000;
+					crt[pos++]='|' | 0x8000;
+					pos -= 12;
+				}
+			}
+			br_redova--;
+		}
+		pos = tmp;
+	} else if(!table){
+		br_redova = 9;
+		tmp = pos;
+		if(tmp % 80 > 69){
+			pos -= 12;
+		}
+		int brojac=98;
+		while(br_redova > 0){
+
+			pos -= 79;
+			for(int i = 0; i < 11; i++){
+				crt[pos++] = (pamti[brojac--] & 0xff) | color;
+			}
+			pos -= 12;
+			br_redova--;
+		}
+		pos = tmp;
+	}
+}
 
 static void
 cgaputc(int c)
@@ -82,12 +261,44 @@ cgaputc(int c)
 	outb(CRTPORT, 15);
 	pos |= inb(CRTPORT+1);
 
-	if(c == '\n')
-		pos += 80 - pos%80;
+	if(c == '\n'){
+		if(!table){
+			pos += 80 - pos%80;
+		} else{
+			cgaputc(ALT_T_KEY);
+		}
+	}
 	else if(c == BACKSPACE){
 		if(pos > 0) --pos;
-	} else
-		crt[pos++] = (c&0xff) | 0x0700;  // black on white
+	}else if(c == ALT_T_KEY){
+		if(!table){
+			table = 1;
+			if(pos%80>69){
+				zapamti(pos-12);
+			}else{
+				zapamti(pos);
+			}
+
+		} else if(table){
+			table = 0;
+		}
+		draw(cnt, pos);
+	} else{
+		if(!table){
+			crt[pos++] = ((c&0xff) & 0x00ff)| color;  // black on white
+		} else{
+			if(c == 'w'){
+				cnt--;
+			}
+			if(c == 's'){
+				cnt++;
+			}
+			cnt = (cnt + 4) % 4;
+			change_color(cnt);
+			draw(cnt, pos);
+
+		}
+	}
 
 	if(pos < 0 || pos > 25*80)
 		panic("pos under/overflow");
@@ -96,13 +307,14 @@ cgaputc(int c)
 		memmove(crt, crt+80, sizeof(crt[0])*23*80);
 		pos -= 80;
 		memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
+		change_color(cnt);
 	}
 
 	outb(CRTPORT, 14);
 	outb(CRTPORT+1, pos>>8);
 	outb(CRTPORT, 15);
 	outb(CRTPORT+1, pos);
-	crt[pos] = ' ' | 0x0700;
+	crt[pos] = ' ' | color;
 }
 
 void
@@ -116,12 +328,17 @@ consputc(int c)
 
 	if(c == BACKSPACE){
 		uartputc('\b'); uartputc(' '); uartputc('\b');
-	} else
+		cgaputc(c);
+	} else if(c == ALT_T_KEY){
+		cgaputc(ALT_T_KEY);
+	} else{
 		uartputc(c);
-	cgaputc(c);
+		cgaputc(c);
+	}
 }
 
 #define INPUT_BUF 128
+
 struct {
 	char buf[INPUT_BUF];
 	uint r;  // Read index
@@ -139,34 +356,52 @@ consoleintr(int (*getc)(void))
 	acquire(&cons.lock);
 	while((c = getc()) >= 0){
 		switch(c){
-		case C('P'):  // Process listing.
-			// procdump() locks cons.lock indirectly; invoke later
-			doprocdump = 1;
-			break;
-		case C('U'):  // Kill line.
-			while(input.e != input.w &&
-			      input.buf[(input.e-1) % INPUT_BUF] != '\n'){
-				input.e--;
+			case C('P'):  // Process listing.
+				// procdump() locks cons.lock indirectly; invoke later
+				doprocdump = 1;
+				break;
+			case C('U'):  // Kill line.
+				while(input.e != input.w &&
+					input.buf[(input.e-1) % INPUT_BUF] != '\n'){
+					input.e--;
 				consputc(BACKSPACE);
-			}
-			break;
-		case C('H'): case '\x7f':  // Backspace
-			if(input.e != input.w){
-				input.e--;
-				consputc(BACKSPACE);
-			}
-			break;
-		default:
-			if(c != 0 && input.e-input.r < INPUT_BUF){
-				c = (c == '\r') ? '\n' : c;
-				input.buf[input.e++ % INPUT_BUF] = c;
-				consputc(c);
-				if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
-					input.w = input.e;
-					wakeup(&input.r);
+					}
+					break;
+			case C('H'): case '\x7f':  // Backspace
+				if(input.e != input.w){
+					input.e--;
+					consputc(BACKSPACE);
 				}
-			}
-			break;
+				break;
+			case '\n':
+				if(table){
+					consputc(ALT_T_KEY);
+					break;
+				}
+				if(c != 0 && input.e-input.r < INPUT_BUF){
+					c = (c == '\r') ? '\n' : c;
+					input.buf[input.e++ % INPUT_BUF] = c;
+					consputc(c);
+					if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
+						input.w = input.e;
+						wakeup(&input.r);
+					}
+				}
+				break;
+			case ALT_T_KEY:
+				consputc(ALT_T_KEY);
+				break;
+			default:
+				if(c != 0 && input.e-input.r < INPUT_BUF){
+					c = (c == '\r') ? '\n' : c;
+					input.buf[input.e++ % INPUT_BUF] = c;
+					consputc(c);
+					if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
+						input.w = input.e;
+						wakeup(&input.r);
+					}
+				}
+				break;
 		}
 	}
 	release(&cons.lock);
@@ -239,4 +474,3 @@ consoleinit(void)
 
 	ioapicenable(IRQ_KBD, 0);
 }
-
